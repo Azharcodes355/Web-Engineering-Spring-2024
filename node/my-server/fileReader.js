@@ -12,28 +12,51 @@ let studentData="";
 //   })
 // }
 
-const someVariable="Sflahsfdhal;sfdhlkaakshdfkahsfdkhaslkdf"
 
-async function readFile(){
+function readFile(filename){
+    fs.readFile(filename,"utf8", (err,mydata)=> {
+      if(err){
+        console.log("ERROR")
+      }else{
+        console.log("DATA IS: ", mydata)
+      }
+    })
+}
+
+async function readFile(filename){
+  //returning promise object
   return new Promise((resolve,reject) => {
-    fs.readFile("a.txt","utf8", (err,mydata)=> {
+    fs.readFile(filename,"utf8", (err,mydata)=> {
       if(err){
         reject("SUPER ERROR: ", err);
       }else{
+        console.log("First promsie fullfilled")
         resolve(mydata)
       }
     })
   }) 
 }
 
-readFile().then((data) => {
-    console.log(data)
+async function secondFunction(){
+  return new Promise((resolve,reject)=>{
+    setTimeout(() => {
+      console.log('Second promise fullfilled')
+      resolve();
+    }, 3000)
+  })
+}
 
+//use of promise funtion
+readFile('b.txt').then((data) => {
+    secondFunction().then(() => {
+      console.log("DATA IS: ", data)
+    })
 });
+
+
 // readFile().then((data) => {
 //       console.log(data)
 //   })
-console.log(value);
 
 
  
