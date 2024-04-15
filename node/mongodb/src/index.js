@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser');
-
+const bcrypt = require('bcrypt');
 const app = express();
 app.use(bodyParser.json())
 
@@ -13,8 +13,6 @@ const UserSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', UserSchema);
-
-User.findBy
 
 async function insertData(username,email,password,contact){
   
@@ -30,31 +28,42 @@ async function insertData(username,email,password,contact){
 app.post("/signup",async (req,res) => {
   const username=req.body.username;
   const email = req.body.email;
-  const password = req.body.password;
+  const password = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync());
   const contact =  req.body.contact;
   const result =await insertData(username,email,password,contact);
   res.send(result);
 })
 
 app.post("/signin", async (req,res) => {
-  const {email,password} = req.body;
+  // const {email,password} = req.body;
+  const email = req.body.email;
+  const password = req.body.password;
   const result = await User.findOne({
-    email:email,
-    password:password
+    email:email
   })
   if(result){
-    res.send({response: result});
+    const passwordMatch=bcrypt.compareSync(password, result.password)
+    if(passwordMatch){
+      return res.json({message: "You are logged in"})
+    }else{
+      return res.json({error: "You are not allowed"})
+    }
   }else{
-    res.json({response: "Incorrect email and password"})
+    return res.json({response: "User does not exists"})
   }
+  
 })
+let hashedPassword="";
+let doesPasswordMatch=null;
 
-// ASSIGNMENT
-/*
-Create a post route and name it delete
-it will get a variable in body named account_email
-you will have to delete the record that has the email
-*/
+app.post("/password", (req,res) => {
+  hashedPassword = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync());
+  res.json({hashedPassword: hashedPassword});
+})
+app.post("/check-password",(req,res) => {
+  doesPasswordMatch = bcrypt.compareSync(req.body.password, hashedPassword);
+  res.json({passwordMatch: doesPasswordMatch});
+})
 
 async function connectDB() {
   await mongoose.connect('mongodb://127.0.0.1:27017/webengtest');
